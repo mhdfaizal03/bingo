@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           scaffoldBackgroundColor: Colors.grey[200],
           appBarTheme: AppBarTheme(backgroundColor: Colors.transparent)),
-      title: 'My App',
+      title: 'BINGO',
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
     );

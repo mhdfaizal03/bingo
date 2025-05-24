@@ -108,7 +108,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       appBar: AppBar(title: const Text("Create Game")),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -123,7 +122,6 @@ class _CreateGamePageState extends State<CreateGamePage> {
               children: [
                 Column(
                   children: [
-                    Text("Enter your ID"),
                     TextField(
                       controller: _nameController,
                       decoration: InputDecoration(

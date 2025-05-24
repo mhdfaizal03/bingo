@@ -738,6 +738,7 @@ class _GamePlayPageState extends State<GamePlayPage> {
                   ),
                   const SizedBox(height: 10),
                   Container(
+                    width: 500,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(30),
                         border: Border.all(
@@ -788,7 +789,7 @@ class _GamePlayPageState extends State<GamePlayPage> {
                   Row(
                     children: [
                       if (isGameStarted && isHost)
-                        Expanded(
+                        Center(
                           child: MaterialButton(
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
@@ -800,7 +801,7 @@ class _GamePlayPageState extends State<GamePlayPage> {
                           ),
                         ),
                       if (!isGameStarted && isHost)
-                        Expanded(
+                        Center(
                           child: MaterialButton(
                             color: color,
                             shape: RoundedRectangleBorder(
@@ -812,16 +813,19 @@ class _GamePlayPageState extends State<GamePlayPage> {
                           ),
                         ),
                       const SizedBox(width: 5),
-                      if (isGameStarted && !isHost)
-                        Expanded(
+                      if (isGameStarted && isHost)
+                        Center(
                           child: MaterialButton(
                             color: color,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                             height: 50,
                             onPressed: isGamePaused ? _restartGame : null,
-                            child: const Text("Restart",
-                                style: TextStyle(color: Colors.white)),
+                            child: Text("Restart",
+                                style: TextStyle(
+                                    color: !isGamePaused
+                                        ? Colors.black
+                                        : Colors.white)),
                           ),
                         ),
                     ],
