@@ -105,7 +105,10 @@ class _JoinGamePageState extends State<JoinGamePage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => GamePlayPage(gameId: gameId, playerId: playerId),
+          builder: (_) => GamePlayPage(
+            gameId: gameId,
+            playerId: playerId,
+          ),
         ),
       );
     } catch (e) {
@@ -124,82 +127,87 @@ class _JoinGamePageState extends State<JoinGamePage> {
       appBar: AppBar(title: const Text("Join Game")),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[300],
-                hintText: "Your ID / Name",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _gameIdController,
-              textCapitalization: TextCapitalization.characters,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[300],
-                hintText: "Game ID",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text("Select your color:"),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              children: List.generate(colors.length, (index) {
-                return GestureDetector(
-                  onTap: () => setState(() => selectedColorIndex = index),
-                  child: Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colors[index],
-                      border: Border.all(
-                        color: selectedColorIndex == index
-                            ? Colors.black
-                            : Colors.transparent,
-                        width: 3,
-                      ),
+        child: Center(
+          child: Container(
+            width: 500,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey[300],
+                    hintText: "Your ID / Name",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
                     ),
-                    child: selectedColorIndex == index
-                        ? const Icon(Icons.check, color: Colors.white)
-                        : null,
                   ),
-                );
-              }),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _gameIdController,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.grey[300],
+                    hintText: "Game ID",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text("Select your color:"),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  children: List.generate(colors.length, (index) {
+                    return GestureDetector(
+                      onTap: () => setState(() => selectedColorIndex = index),
+                      child: Container(
+                        height: 50,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors[index],
+                          border: Border.all(
+                            color: selectedColorIndex == index
+                                ? Colors.black
+                                : Colors.transparent,
+                            width: 3,
+                          ),
+                        ),
+                        child: selectedColorIndex == index
+                            ? const Icon(Icons.check, color: Colors.white)
+                            : null,
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 30),
+                Spacer(),
+                MaterialButton(
+                  height: 50,
+                  minWidth: double.infinity,
+                  color: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  onPressed: _isLoading ? null : _joinGame,
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          color: Colors.green,
+                          strokeWidth: 1.8,
+                        )
+                      : const Text("Join Game",
+                          style: TextStyle(fontSize: 18, color: Colors.white)),
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
-            Spacer(),
-            MaterialButton(
-              height: 50,
-              minWidth: double.infinity,
-              color: Colors.green,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              onPressed: _isLoading ? null : _joinGame,
-              child: _isLoading
-                  ? const CircularProgressIndicator(
-                      color: Colors.green,
-                      strokeWidth: 1.8,
-                    )
-                  : const Text("Join Game",
-                      style: TextStyle(fontSize: 18, color: Colors.white)),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -99,7 +99,10 @@ class _CreateGamePageState extends State<CreateGamePage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => GamePlayPage(gameId: gameId!, playerId: playerId!),
+          builder: (_) => GamePlayPage(
+            gameId: gameId!,
+            // playerId: playerId!,
+          ),
         ),
       );
     }
@@ -112,119 +115,122 @@ class _CreateGamePageState extends State<CreateGamePage> {
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.80,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  children: [
-                    TextField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.grey[300],
-                        hintText: "Your ID / Name",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxWidth: 400,
+                  maxHeight: MediaQuery.of(context).size.height * 0.80),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.grey[300],
+                          hintText: "Your ID / Name",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text("Choose Color"),
-                    Wrap(
-                      spacing: 10,
-                      children: List.generate(colors.length, (index) {
-                        return GestureDetector(
-                          onTap: () =>
-                              setState(() => selectedColorIndex = index),
-                          child: Container(
-                            height: 50,
-                            width: 50,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: colors[index],
-                              border: Border.all(
-                                color: selectedColorIndex == index
-                                    ? Colors.black
-                                    : Colors.transparent,
-                                width: 3,
+                      const SizedBox(height: 20),
+                      const Text("Choose Color"),
+                      Wrap(
+                        spacing: 10,
+                        children: List.generate(colors.length, (index) {
+                          return GestureDetector(
+                            onTap: () =>
+                                setState(() => selectedColorIndex = index),
+                            child: Container(
+                              height: 50,
+                              width: 50,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: colors[index],
+                                border: Border.all(
+                                  color: selectedColorIndex == index
+                                      ? Colors.black
+                                      : Colors.transparent,
+                                  width: 3,
+                                ),
                               ),
+                              child: selectedColorIndex == index
+                                  ? const Icon(Icons.check, color: Colors.white)
+                                  : null,
                             ),
-                            child: selectedColorIndex == index
-                                ? const Icon(Icons.check, color: Colors.white)
-                                : null,
-                          ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text("Value Range"),
-                    Wrap(
-                      spacing: 10,
-                      children: valueOptions.map((value) {
-                        return ChoiceChip(
-                          label: Text("$value"),
-                          selected: selectedValue == value,
-                          onSelected: (_) =>
-                              setState(() => selectedValue = value),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text("Player Count"),
-                    Wrap(
-                      spacing: 10,
-                      children: playerCountOptions.map((count) {
-                        return ChoiceChip(
-                          labelPadding: EdgeInsets.symmetric(horizontal: 12),
-                          label: Text("$count"),
-                          selected: maxPlayers == count,
-                          onSelected: (_) => setState(() => maxPlayers = count),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    if (gameId != null) ...[
-                      const SizedBox(height: 30),
-                      const Text("Game ID", style: TextStyle(fontSize: 16)),
-                      SelectableText(
-                        gameId!,
-                        style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                          );
+                        }),
                       ),
                       const SizedBox(height: 20),
+                      const Text("Value Range"),
+                      Wrap(
+                        spacing: 10,
+                        children: valueOptions.map((value) {
+                          return ChoiceChip(
+                            label: Text("$value"),
+                            selected: selectedValue == value,
+                            onSelected: (_) =>
+                                setState(() => selectedValue = value),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text("Player Count"),
+                      Wrap(
+                        spacing: 10,
+                        children: playerCountOptions.map((count) {
+                          return ChoiceChip(
+                            labelPadding: EdgeInsets.symmetric(horizontal: 12),
+                            label: Text("$count"),
+                            selected: maxPlayers == count,
+                            onSelected: (_) =>
+                                setState(() => maxPlayers = count),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                      if (gameId != null) ...[
+                        const SizedBox(height: 30),
+                        const Text("Game ID", style: TextStyle(fontSize: 16)),
+                        SelectableText(
+                          gameId!,
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                     ],
-                  ],
-                ),
-                Center(
-                  child: MaterialButton(
-                    height: 50,
-                    minWidth: double.infinity,
-                    color: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    onPressed: _isLoading
-                        ? null
-                        : gameId != null
-                            ? _navigateToGame
-                            : _createGame,
-                    child: _isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.blue,
-                            strokeWidth: 1.8,
-                          )
-                        : Text(gameId != null ? "Go to Game" : "Create Game",
-                            style:
-                                TextStyle(fontSize: 18, color: Colors.white)),
                   ),
-                ),
-              ],
+                  Center(
+                    child: MaterialButton(
+                      height: 50,
+                      minWidth: double.infinity,
+                      color: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      onPressed: _isLoading
+                          ? null
+                          : gameId != null
+                              ? _navigateToGame
+                              : _createGame,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Colors.blue,
+                              strokeWidth: 1.8,
+                            )
+                          : Text(gameId != null ? "Go to Game" : "Create Game",
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
