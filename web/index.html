@@ -27,12 +27,35 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="img.png"/>
 
   <title>bingo</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDfuaExoddJk2OybgJSeBxxLc9NtjfzzwY",
+      authDomain: "bingo-83cb4.firebaseapp.com",
+      projectId: "bingo-83cb4",
+      storageBucket: "bingo-83cb4.firebasestorage.app",
+      messagingSenderId: "129782074914",
+      appId: "1:129782074914:web:d0d0fc8e7dc6e9afeac47b",
+      measurementId: "G-KG1XRKHRLM"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
 </body>
 </html>

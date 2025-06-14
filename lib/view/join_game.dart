@@ -106,8 +106,8 @@ class _JoinGamePageState extends State<JoinGamePage> {
         context,
         MaterialPageRoute(
           builder: (_) => GamePlayPage(
-            gameId: gameId,
             playerId: playerId,
+            gameId: gameId,
           ),
         ),
       );
