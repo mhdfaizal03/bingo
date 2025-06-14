@@ -101,7 +101,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
         MaterialPageRoute(
           builder: (_) => GamePlayPage(
             gameId: gameId!,
-            // playerId: playerId!,
+            playerId: playerId!,
           ),
         ),
       );
