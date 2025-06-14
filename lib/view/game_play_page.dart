@@ -1372,7 +1372,10 @@ class _GamePlayPageState extends State<GamePlayPage> {
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  // const Spacer(),
+                  SizedBox(
+                    height: 40,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
