@@ -4,6 +4,7 @@ import 'package:bingo/utils/widgets.dart';
 import 'package:bingo/view/game_play_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:uuid/uuid.dart';
 
 class CreateGamePage extends StatefulWidget {
@@ -15,7 +16,7 @@ class CreateGamePage extends StatefulWidget {
 
 class _CreateGamePageState extends State<CreateGamePage> {
   final TextEditingController _nameController = TextEditingController();
-  final List<int> valueOptions = [25];
+  final List<int> valueOptions = [25, 64];
   final List<int> playerCountOptions = [2, 3, 4, 5];
   int? selectedColorIndex;
   int? selectedValue;
@@ -220,10 +221,14 @@ class _CreateGamePageState extends State<CreateGamePage> {
                               ? _navigateToGame
                               : _createGame,
                       child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.blue,
-                              strokeWidth: 1.8,
-                            )
+                          ? Lottie.asset(
+                              width: 300,
+                              height: 200,
+                              'assets/Animation - 1749891403914.json')
+                          // const CircularProgressIndicator(
+                          //     color: Colors.blue,
+                          //     strokeWidth: 1.8,
+                          //   )
                           : Text(gameId != null ? "Go to Game" : "Create Game",
                               style:
                                   TextStyle(fontSize: 18, color: Colors.white)),

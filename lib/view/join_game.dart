@@ -3,6 +3,7 @@ import 'package:bingo/utils/widgets.dart';
 import 'package:bingo/view/game_play_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:uuid/uuid.dart';
 
 class JoinGamePage extends StatefulWidget {
@@ -198,10 +199,14 @@ class _JoinGamePageState extends State<JoinGamePage> {
                   ),
                   onPressed: _isLoading ? null : _joinGame,
                   child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.green,
-                          strokeWidth: 1.8,
-                        )
+                      ? Lottie.asset(
+                          width: 300,
+                          height: 200,
+                          'assets/Animation - 1749891403914.json')
+                      // const CircularProgressIndicator(
+                      //     color: Colors.green,
+                      //     strokeWidth: 1.8,
+                      //   )
                       : const Text("Join Game",
                           style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
