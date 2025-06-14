@@ -15,8 +15,8 @@ class CreateGamePage extends StatefulWidget {
 
 class _CreateGamePageState extends State<CreateGamePage> {
   final TextEditingController _nameController = TextEditingController();
-  final List<int> valueOptions = [25, 50];
-  final List<int> playerCountOptions = [2, 3, 4, 5, 6];
+  final List<int> valueOptions = [25];
+  final List<int> playerCountOptions = [2, 3, 4, 5];
   int? selectedColorIndex;
   int? selectedValue;
   int? maxPlayers;
