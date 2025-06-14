@@ -25,9 +25,9 @@ class _CreateGamePageState extends State<CreateGamePage> {
   bool _isLoading = false;
 
   String _generateGameId() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = '0123456789';
     final rand = Random();
-    return List.generate(6, (_) => chars[rand.nextInt(chars.length)]).join();
+    return List.generate(4, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 
   List<int> generateRandomBoard(int maxValue) {
