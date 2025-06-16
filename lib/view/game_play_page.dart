@@ -335,6 +335,7 @@ class _GamePlayPageState extends State<GamePlayPage> {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
               child: Container(
+                width: 300,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
