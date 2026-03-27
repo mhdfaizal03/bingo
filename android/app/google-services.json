@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "991544146903",
+    "project_id": "bingo-game-e57bf",
+    "storage_bucket": "bingo-game-e57bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991544146903:android:232b8a47aef0bf70e12992",
+        "android_client_info": {
+          "package_name": "com.soft.bingo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoZP-sZ2AHzZ5O1UeKAGGYTPMQLizSZRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

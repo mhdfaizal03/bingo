@@ -6,7 +6,6 @@ import 'package:bingo/view/game_play_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
 import 'package:uuid/uuid.dart';
 
 class CreateGamePage extends StatefulWidget {
@@ -36,7 +35,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
   List<int> generateRandomBoard(int maxValue) {
     List<int> numbers = List.generate(maxValue, (index) => index + 1);
     numbers.shuffle();
-    return numbers.take(25).toList();
+    return numbers;
   }
 
   Future<void> _createGame() async {
@@ -114,307 +113,282 @@ class _CreateGamePageState extends State<CreateGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-          foregroundColor: Colors.white70,
-          backgroundColor: const Color.fromARGB(248, 61, 8, 26),
-          title: const Text("Create Game")),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          "CREATE GAME",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+            fontSize: 20,
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-              const Color.fromARGB(248, 61, 8, 26),
-              Colors.black,
-            ])),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: SingleChildScrollView(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxWidth: 400,
-                    maxHeight: MediaQuery.of(context).size.height * 0.80),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
+                  Color(0xFF1E1B4B),
+                  Colors.black,
+                ],
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1.2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 6,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
+                        GlassContainer(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "YOUR IDENTITY",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 1.5,
                                 ),
-                                child: TextField(
-                                  controller: _nameController,
-                                  maxLength: 15,
-                                  style: const TextStyle(color: Colors.white),
-                                  decoration: InputDecoration(
-                                    hintText: "Your ID / Name",
-                                    hintStyle:
-                                        const TextStyle(color: Colors.white70),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 14),
-                                    counterText: "",
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: _nameController,
+                                maxLength: 15,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: "Enter your name...",
+                                  hintStyle:
+                                      const TextStyle(color: Colors.white24),
+                                  filled: true,
+                                  fillColor: Colors.white.withOpacity(0.05),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
                                   ),
-                                  buildCounter: (
-                                    BuildContext context, {
-                                    required int currentLength,
-                                    required bool isFocused,
-                                    required int? maxLength,
-                                  }) {
-                                    return null; // hides the counter
-                                  },
-                                )),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          "Choose Color",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 10,
-                          children: List.generate(colors.length, (index) {
-                            return GestureDetector(
-                              onTap: () =>
-                                  setState(() => selectedColorIndex = index),
-                              child: Container(
+                                  contentPadding: const EdgeInsets.all(16),
+                                  counterText: "",
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              const Text(
+                                "PICK YOUR COLOR",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
                                 height: 50,
-                                width: 50,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: colors[index],
-                                  border: Border.all(
-                                    color: selectedColorIndex == index
-                                        ? Colors.white.withOpacity(0.2)
-                                        : Colors.transparent,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: selectedColorIndex == index
-                                    ? const Icon(Icons.check,
-                                        color: Colors.white)
-                                    : null,
-                              ),
-                            );
-                          }),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          "Value Range",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 10,
-                          children: valueOptions.map((value) {
-                            final isSelected = selectedValue == value;
-                            return GestureDetector(
-                              onTap: () =>
-                                  setState(() => selectedValue = value),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.white38,
-                                    width: 1.2,
-                                  ),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withOpacity(0.15),
-                                      Colors.white.withOpacity(0.05),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                        sigmaX: 10, sigmaY: 10),
-                                    child: Text(
-                                      "$value",
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.white
-                                            : Colors.white70,
-                                        fontWeight: FontWeight.w600,
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: colors.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(width: 16),
+                                  itemBuilder: (context, index) {
+                                    final bool isSelected =
+                                        selectedColorIndex == index;
+                                    return GestureDetector(
+                                      onTap: () => setState(
+                                          () => selectedColorIndex = index),
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: colors[index],
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? Colors.white
+                                                : Colors.transparent,
+                                            width: 3,
+                                          ),
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: colors[index]
+                                                        .withOpacity(0.5),
+                                                    blurRadius: 12,
+                                                    spreadRadius: 2,
+                                                  )
+                                                ]
+                                              : [],
+                                        ),
+                                        child: isSelected
+                                            ? const Icon(Icons.check,
+                                                color: Colors.white)
+                                            : null,
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          "Player Count",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 10,
-                          children: playerCountOptions.map((count) {
-                            final isSelected = maxPlayers == count;
-                            return GestureDetector(
-                              onTap: () => setState(() => maxPlayers = count),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 25, vertical: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.white38,
-                                    width: 1.2,
-                                  ),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withOpacity(0.15),
-                                      Colors.white.withOpacity(0.05),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.05),
-                                      blurRadius: 8,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                        sigmaX: 10, sigmaY: 10),
-                                    child: Text(
-                                      "$count",
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.white
-                                            : Colors.white70,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 20),
-                        if (gameId != null) ...[
-                          const SizedBox(height: 30),
-                          const Text("Game ID",
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white)),
-                          SelectableText(
-                            gameId!,
-                            style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white70),
+                            ],
                           ),
-                          const SizedBox(height: 20),
-                        ],
-                      ],
-                    ),
-                    _isLoading
-                        ? Lottie.asset(
-                            'assets/Animation - 1749891403914.json',
-                            width: 300,
-                            height: 200,
-                          )
-                        : Center(
-                            child: Hero(
-                              tag: 'create',
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: BackdropFilter(
-                                  filter:
-                                      ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.25),
-                                        width: 1.2,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 6,
-                                          offset: Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: MaterialButton(
-                                      height: 50,
-                                      minWidth: double.infinity,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      onPressed: _isLoading
-                                          ? null
-                                          : gameId != null
-                                              ? _navigateToGame
-                                              : _createGame,
-                                      child: Text(
-                                        gameId != null
-                                            ? "Go to Game"
-                                            : "Create Game",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.white.withOpacity(0.85),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildOptionGroup(
+                                title: "VALUE RANGE",
+                                options: valueOptions,
+                                selectedValue: selectedValue,
+                                onSelected: (val) =>
+                                    setState(() => selectedValue = val),
                               ),
                             ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildOptionGroup(
+                                title: "PLAYERS",
+                                options: playerCountOptions,
+                                selectedValue: maxPlayers,
+                                onSelected: (val) =>
+                                    setState(() => maxPlayers = val),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (gameId != null) ...[
+                          const SizedBox(height: 32),
+                          GlassContainer(
+                            padding: const EdgeInsets.all(20),
+                            borderColor: Colors.green.withOpacity(0.3),
+                            child: Column(
+                              children: [
+                                const Text(
+                                  "GAME CREATED SUCCESSFULLY!",
+                                  style: TextStyle(
+                                    color: Colors.greenAccent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                SelectableText(
+                                  gameId!,
+                                  style: const TextStyle(
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 4,
+                                  ),
+                                ),
+                                const Text(
+                                  "Share this ID with your friends",
+                                  style: TextStyle(color: Colors.white38),
+                                ),
+                              ],
+                            ),
                           ),
-                  ],
+                        ],
+                        const SizedBox(height: 48),
+                        Hero(
+                          tag: 'create',
+                          child: PremiumButton(
+                            isLoading: _isLoading,
+                            label: gameId != null ? "GO TO LOBBY" : "CREATE GAME",
+                            icon: gameId != null
+                                ? Icons.rocket_launch_outlined
+                                : Icons.add_rounded,
+                            onPressed: _isLoading
+                                ? () {}
+                                : gameId != null
+                                    ? _navigateToGame
+                                    : _createGame,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionGroup({
+    required String title,
+    required List<int> options,
+    required int? selectedValue,
+    required Function(int) onSelected,
+  }) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white38,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: options.map((opt) {
+              final isSelected = selectedValue == opt;
+              return GestureDetector(
+                onTap: () => onSelected(opt),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.white.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                    ),
+                  ),
+                  child: Text(
+                    "$opt",
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white60,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

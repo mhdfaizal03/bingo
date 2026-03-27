@@ -1,11 +1,8 @@
-import 'dart:ui';
-
 import 'package:bingo/utils/colors.dart';
 import 'package:bingo/utils/widgets.dart';
 import 'package:bingo/view/game_play_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:uuid/uuid.dart';
 
 class JoinGamePage extends StatefulWidget {
@@ -24,7 +21,7 @@ class _JoinGamePageState extends State<JoinGamePage> {
   List<int> generateRandomBoard(int maxValue) {
     List<int> numbers = List.generate(maxValue, (index) => index + 1);
     numbers.shuffle();
-    return numbers.take(25).toList();
+    return numbers;
   }
 
   Future<void> _joinGame() async {
@@ -127,173 +124,194 @@ class _JoinGamePageState extends State<JoinGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-          foregroundColor: Colors.white70,
-          backgroundColor: const Color.fromARGB(248, 61, 8, 26),
-          title: const Text("Join Game")),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          "JOIN GAME",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+            fontSize: 20,
+          ),
+        ),
+      ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-              const Color.fromARGB(248, 61, 8, 26),
-              Colors.black,
-            ])),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Center(
-            child: Container(
-              width: 500,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(15),
-                          border:
-                              Border.all(color: Colors.white.withOpacity(0.2)),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 5),
-                        child: TextField(
-                          controller: _nameController,
-                          maxLength: 15, // optional
-                          buildCounter: (
-                            context, {
-                            required int currentLength,
-                            required bool isFocused,
-                            required int? maxLength,
-                          }) {
-                            return null; // hides the counter completely
-                          },
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: "Your ID / Name",
-                            hintStyle: TextStyle(color: Colors.white70),
-                            border: InputBorder.none,
-                            counterText: "", // also helps hide counter space
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color:
-                              Colors.white.withOpacity(0.1), // Glass background
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color:
-                                Colors.white.withOpacity(0.2), // Frosted border
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 5),
-                        child: TextField(
-                          controller: _gameIdController,
-                          textCapitalization: TextCapitalization.characters,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: "Game ID",
-                            hintStyle: TextStyle(color: Colors.white70),
-                            border: InputBorder.none, // Remove default border
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Select your color:",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    children: List.generate(colors.length, (index) {
-                      return GestureDetector(
-                        onTap: () => setState(() => selectedColorIndex = index),
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: colors[index],
-                            border: Border.all(
-                              color: selectedColorIndex == index
-                                  ? Colors.white.withOpacity(0.2)
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                          child: selectedColorIndex == index
-                              ? const Icon(Icons.check, color: Colors.white)
-                              : null,
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 30),
-                  Spacer(),
-                  Hero(
-                      tag: 'join',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                                width: 1.2,
-                              ),
-                            ),
-                            child: MaterialButton(
-                              height: 50,
-                              minWidth: double.infinity,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              onPressed: _isLoading ? null : _joinGame,
-                              child: _isLoading
-                                  ? Lottie.asset(
-                                      'assets/Animation - 1749891403914.json',
-                                      width: 300,
-                                      height: 200,
-                                    )
-                                  : const Text(
-                                      "Join Game",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      )),
+                  Color(0xFF1E1B4B),
+                  Colors.black,
                 ],
               ),
             ),
           ),
-        ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        GlassContainer(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "YOUR IDENTITY",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: _nameController,
+                                maxLength: 15,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: "Enter your name...",
+                                  hintStyle:
+                                      const TextStyle(color: Colors.white24),
+                                  filled: true,
+                                  fillColor: Colors.white.withOpacity(0.05),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.all(16),
+                                  counterText: "",
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                "GAME ID",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: _gameIdController,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 4,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: "ABCD",
+                                  hintStyle:
+                                      const TextStyle(color: Colors.white24),
+                                  filled: true,
+                                  fillColor: Colors.white.withOpacity(0.05),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.all(16),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              const Text(
+                                "PICK YOUR COLOR",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                height: 50,
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: colors.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(width: 16),
+                                  itemBuilder: (context, index) {
+                                    final bool isSelected =
+                                        selectedColorIndex == index;
+                                    return GestureDetector(
+                                      onTap: () => setState(
+                                          () => selectedColorIndex = index),
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: colors[index],
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? Colors.white
+                                                : Colors.transparent,
+                                            width: 3,
+                                          ),
+                                          boxShadow: isSelected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: colors[index]
+                                                        .withOpacity(0.5),
+                                                    blurRadius: 12,
+                                                    spreadRadius: 2,
+                                                  )
+                                                ]
+                                              : [],
+                                        ),
+                                        child: isSelected
+                                            ? const Icon(Icons.check,
+                                                color: Colors.white)
+                                            : null,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 48),
+                        Hero(
+                          tag: 'join',
+                          child: PremiumButton(
+                            isLoading: _isLoading,
+                            label: "JOIN GAME",
+                            icon: Icons.login_rounded,
+                            onPressed: _isLoading ? () {} : _joinGame,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

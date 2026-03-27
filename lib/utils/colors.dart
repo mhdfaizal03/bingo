@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 final List<Color> colors = [
-  Colors.indigo.withOpacity(0.8),
-  Colors.blue.withOpacity(0.8),
-  Colors.orange.withOpacity(0.8),
-  Colors.green.withOpacity(0.8),
-  Colors.amber.withOpacity(0.8),
+  const Color(0xFF6366F1), // Royal Blue/Indigo
+  const Color(0xFFEC4899), // Pink
+  const Color(0xFFF59E0B), // Amber
+  const Color(0xFF10B981), // Emerald
+  const Color(0xFF06B6D4), // Cyan
 ];

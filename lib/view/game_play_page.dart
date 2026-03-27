@@ -1,13 +1,12 @@
-import 'dart:ui';
+import 'package:bingo/utils/colors.dart';
+import 'package:bingo/utils/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
-import 'dart:math';
-
 import 'package:vibration/vibration.dart';
+import 'dart:math';
+import 'dart:ui';
 
 class GamePlayPage extends StatefulWidget {
   final String gameId;
@@ -553,384 +552,330 @@ class _GamePlayPageState extends State<GamePlayPage> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedNumbers = List<int>.from(gameData?['selectedNumbers'] ?? []);
-    final color = Color(playerData?['color'] ?? Colors.grey.value);
-    final playerName = playerData?['name'] ?? "Player";
-    final players = gameData?['players'] as Map<String, dynamic>? ?? {};
-    final playerWidgets = players.entries.take(4).toList();
-
     if (gameData == null || playerData == null || board.isEmpty) {
-      return Scaffold(
+      return const Scaffold(
+        backgroundColor: Colors.black,
         body: Center(
-            child: Lottie.asset('assets/Animation - 1749891403914.json')),
+          child: CircularProgressIndicator(color: Colors.indigoAccent),
+        ),
       );
     }
 
+    final playerName = playerData?['name'] ?? "Player";
+    final playerColor = Color(playerData?['color'] ?? Colors.grey.value);
+    final selectedNumbers = List<int>.from(gameData?['selectedNumbers'] ?? []);
+
     return WillPopScope(
       onWillPop: () async {
-        bool? shouldExit = await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        return await showDialog<bool>(
+              context: context,
+              builder: (context) => BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                 child: AlertDialog(
-                  insetPadding: EdgeInsets.all(0),
                   backgroundColor: Colors.white.withOpacity(0.1),
-                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                     side: BorderSide(color: Colors.white.withOpacity(0.2)),
                   ),
-                  title: const Text(
-                    'Exit Game?',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  content: const Text(
-                    'Are you sure you want to exit the game?',
-                    style: TextStyle(color: Colors.white70),
-                  ),
+                  title: const Text('Exit Game?',
+                      style: TextStyle(color: Colors.white)),
+                  content: const Text('Are you sure you want to leave?',
+                      style: TextStyle(color: Colors.white70)),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text(
-                        'No',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Stay',
+                          style: TextStyle(color: Colors.white)),
                     ),
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text(
-                        'Yes',
-                        style: TextStyle(color: Colors.redAccent),
-                      ),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Leave',
+                          style: TextStyle(color: Colors.redAccent)),
                     ),
+                  ],
+                ),
+              ),
+            ) ??
+            false;
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          title: GlassContainer(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            borderRadius: 30,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.tag, size: 16, color: Colors.white38),
+                const SizedBox(width: 4),
+                Text(
+                  widget.gameId,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            if (isHost)
+              IconButton(
+                icon: Icon(
+                  isGamePaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                  color: Colors.white,
+                ),
+                onPressed: _pauseOrResumeGame,
+              ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: Stack(
+          children: [
+            // Premium background
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF1E1B4B), // Deep Indigo
+                    Color(0xFF0F172A), // Slate 900
+                    Colors.black,
                   ],
                 ),
               ),
             ),
+            SafeArea(
+              child: Column(
+                children: [
+                  // Turn Indicator and Player Stats
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isMyTurn ? "YOUR TURN" : "WAITING FOR...",
+                                style: TextStyle(
+                                  color: isMyTurn
+                                      ? Colors.emeraldAccent
+                                      : Colors.white38,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isMyTurn ? playerName : _getCurrentPlayerName(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        _buildBingoLetterRow(),
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: GlassContainer(
+                              padding: const EdgeInsets.all(12),
+                              borderRadius: 24,
+                              borderColor: isMyTurn
+                                  ? Colors.indigoAccent.withOpacity(0.5)
+                                  : Colors.white.withOpacity(0.1),
+                              child: GridView.builder(
+                                itemCount: board.length,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: gridSize,
+                                  crossAxisSpacing: 8,
+                                  mainAxisSpacing: 8,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final number = board[index];
+                                  final isGloballySelected =
+                                      selectedNumbers.contains(number);
+
+                                  return _buildGridCell(
+                                    number: number,
+                                    isSelected: isGloballySelected,
+                                    isMyTurn: isMyTurn,
+                                    playerColor: playerColor,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Game Status Footer
+                  if (isGamePaused && !dialogShown)
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: GlassContainer(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        borderRadius: 30,
+                        backgroundColor: Colors.red.withOpacity(0.2),
+                        child: const Text(
+                          "GAME PAUSED",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                shouldLoop: false,
+                colors: const [
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBingoLetterRow() {
+    const letters = ['B', 'I', 'N', 'G', 'O'];
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (i) {
+        final active = bingoStatus[i];
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.only(left: 6),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: active
+                ? Colors.indigoAccent
+                : Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: active ? Colors.white : Colors.white24,
+              width: 1,
+            ),
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                        color: Colors.indigoAccent.withOpacity(0.5),
+                        blurRadius: 8)
+                  ]
+                : [],
+          ),
+          child: Center(
+            child: Text(
+              letters[i],
+              style: TextStyle(
+                color: active ? Colors.white : Colors.white38,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
+            ),
           ),
         );
-        return shouldExit ?? false;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: const Color.fromARGB(248, 61, 8, 26),
-          centerTitle: true,
-          title: SizedBox(
-            width: 100,
-            child: TextFormField(
-                initialValue: widget.gameId,
-                readOnly: true,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(borderSide: BorderSide.none)),
-                style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w500)),
+      }),
+    );
+  }
+
+  Widget _buildGridCell({
+    required int number,
+    required bool isSelected,
+    required bool isMyTurn,
+    required Color playerColor,
+  }) {
+    return GestureDetector(
+      onTap: () => _handleNumberTap(number),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? playerColor.withOpacity(0.4)
+              : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? playerColor
+                : Colors.white.withOpacity(0.1),
+            width: isSelected ? 2 : 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: playerColor.withOpacity(0.3),
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                  )
+                ]
+              : [],
         ),
-        body: Container(
-          height: double.infinity,
-          width: double.infinity,
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                const Color.fromARGB(248, 61, 8, 26),
-                Colors.black,
-              ])),
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text("Hello, $playerName",
-                        style: const TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70)),
-                    const SizedBox(height: 10),
-                    if (isGameStarted && !isGamePaused)
-                      Text(isMyTurn ? "Your Turn" : "Waiting...",
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green)),
-                    if (isGamePaused)
-                      Text(
-                          gameData?['showWinnerDialog'] == true
-                              ? "Game Paused - Winner Found!"
-                              : "Game Paused",
-                          style:
-                              const TextStyle(fontSize: 20, color: Colors.red)),
-
-                    // Show current turn player
-                    if (isGameStarted && !isGamePaused)
-                      Text(
-                        "Current Turn: ${_getCurrentPlayerName()}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blue,
-                        ),
-                      ),
-
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (i) {
-                        const letters = ['B', 'I', 'N', 'G', 'O'];
-                        return Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                height: 55,
-                                width: 55,
-                                decoration: BoxDecoration(
-                                  color: bingoStatus[i]
-                                      ? Colors.red.withOpacity(0.3)
-                                      : Colors.white24,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white38,
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8,
-                                      offset: Offset(0, 2),
-                                    )
-                                  ],
-                                ),
-                                child: Center(
-                                  child: bingoStatus[i]
-                                      ? const Icon(Icons.check,
-                                          size: 32, color: Colors.white)
-                                      : Text(
-                                          letters[i],
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 1.2,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: 500,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          width: 2,
-                          color: isMyTurn ? Colors.green : Colors.transparent,
-                        ),
-                      ),
-                      child: Center(
-                        child: GridView.builder(
-                          itemCount: board.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: gridSize,
-                          ),
-                          itemBuilder: (_, index) {
-                            if (index >= board.length)
-                              return const SizedBox.shrink();
-
-                            final number = board[index];
-                            final selected = playerData?['selectedNumbers']
-                                    ?.contains(number) ??
-                                false;
-
-                            return GestureDetector(
-                              onTap: () async {
-                                _handleNumberTap(number);
-                              },
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: BackdropFilter(
-                                  filter:
-                                      ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                  child: Container(
-                                    margin: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: selected
-                                          ? color.withOpacity(0.3)
-                                          : Colors.white.withOpacity(0.1),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
-                                        width: 1.5,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        "$number",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: gridSize > 5 ? 16 : 20,
-                                          color: selected
-                                              ? Colors.white
-                                              : Colors.white70,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(
-                      height: 40,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (isGameStarted &&
-                            isHost &&
-                            gameData?['showWinnerDialog'] != true)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: Colors.white.withOpacity(0.2)),
-                                ),
-                                child: MaterialButton(
-                                  height: 50,
-                                  onPressed: _pauseOrResumeGame,
-                                  child: Text(
-                                    isGamePaused ? "Resume" : "Pause",
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (!isGameStarted && isHost) const SizedBox(width: 8),
-                        if (!isGameStarted && isHost)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: Colors.white.withOpacity(0.2)),
-                                ),
-                                child: MaterialButton(
-                                  height: 50,
-                                  onPressed: _startGame,
-                                  child: const Text(
-                                    "Start Game",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        if ((isGameStarted &&
-                                isHost &&
-                                gameData?['showWinnerDialog'] != true) ||
-                            isGamePaused)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: Colors.white.withOpacity(0.2)),
-                                ),
-                                child: MaterialButton(
-                                  height: 50,
-                                  onPressed: isGamePaused ? _restartGame : null,
-                                  child: Text(
-                                    "Restart",
-                                    style: TextStyle(
-                                      color: isGamePaused
-                                          ? Colors.white
-                                          : Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    )
-                  ],
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (isSelected)
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _ShinePainter(color: playerColor.withOpacity(0.2)),
                 ),
               ),
-
-              // Confetti Widget
-              Align(
-                alignment: Alignment.center,
-                child: ConfettiWidget(
-                  confettiController: _confettiController,
-                  blastDirectionality: BlastDirectionality.explosive,
-                  shouldLoop: false,
-                  numberOfParticles: 30,
-                  emissionFrequency: 0.1,
-                ),
+            Text(
+              "$number",
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.white70,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                fontSize: gridSize > 6 ? 14 : 18,
               ),
-
-              Positioned(
-                  top: 10,
-                  left: 10,
-                  child: _buildCornerText(playerWidgets, 0, Colors.white70)),
-              Positioned(
-                  top: 10,
-                  right: 10,
-                  child: _buildCornerText(playerWidgets, 1, Colors.white70)),
-              Positioned(
-                  bottom: 140,
-                  left: 10,
-                  child: _buildCornerText(playerWidgets, 2, Colors.white70)),
-              Positioned(
-                  bottom: 140,
-                  right: 10,
-                  child: _buildCornerText(playerWidgets, 3, Colors.white70)),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -946,27 +891,22 @@ class _GamePlayPageState extends State<GamePlayPage> {
     final currentPlayer = players[currentTurn];
     return currentPlayer?['name'] ?? "Unknown";
   }
+}
 
-  Widget _buildCornerText(
-      List<MapEntry<String, dynamic>> players, int index, Color color) {
-    if (index >= players.length) return const SizedBox();
-    final player = players[index].value;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-            overflow: TextOverflow.ellipsis,
-            player['name'] ?? '',
-            style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
-                color: Colors.white70)),
-        Text(
-          "${player['score'] ?? 0}",
-          style: TextStyle(
-              color: color, fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
+class _ShinePainter extends CustomPainter {
+  final Color color;
+  _ShinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [color, Colors.transparent],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawCircle(
+        Offset(size.width / 2, size.height / 2), size.width / 2, paint);
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
