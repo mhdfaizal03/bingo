@@ -1,9 +1,11 @@
 import 'package:bingo/utils/colors.dart';
 import 'package:bingo/utils/widgets.dart';
+import 'package:bingo/view/create_join.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
 import 'package:vibration/vibration.dart';
 import 'dart:math';
 import 'dart:ui';
@@ -564,6 +566,8 @@ class _GamePlayPageState extends State<GamePlayPage> {
     final playerName = playerData?['name'] ?? "Player";
     final playerColor = Color(playerData?['color'] ?? Colors.grey.value);
     final selectedNumbers = List<int>.from(gameData?['selectedNumbers'] ?? []);
+    final playersMap = gameData?['players'] as Map<String, dynamic>? ?? {};
+    final playerList = playersMap.entries.toList();
 
     return WillPopScope(
       onWillPop: () async {
@@ -626,7 +630,7 @@ class _GamePlayPageState extends State<GamePlayPage> {
             ),
           ),
           actions: [
-            if (isHost)
+            if (isHost && isGameStarted)
               IconButton(
                 icon: Icon(
                   isGamePaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
@@ -634,6 +638,14 @@ class _GamePlayPageState extends State<GamePlayPage> {
                 ),
                 onPressed: _pauseOrResumeGame,
               ),
+            IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Colors.white60),
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const CreateJoin()),
+                (route) => false,
+              ),
+            ),
             const SizedBox(width: 8),
           ],
         ),
@@ -656,7 +668,10 @@ class _GamePlayPageState extends State<GamePlayPage> {
             SafeArea(
               child: Column(
                 children: [
-                  // Turn Indicator and Player Stats
+                  // Player Statistics Bar
+                  _buildPlayerStats(playerList),
+
+                  // Turn Indicator
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24.0, vertical: 16),
@@ -668,10 +683,10 @@ class _GamePlayPageState extends State<GamePlayPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isMyTurn ? "YOUR TURN" : "WAITING FOR...",
+                                isMyTurn ? "YOUR TURN" : (isGameStarted ? "WAITING FOR..." : "LOBBY"),
                                 style: TextStyle(
                                   color: isMyTurn
-                                      ? Colors.emeraldAccent
+                                      ? const Color(0xFF10B981)
                                       : Colors.white38,
                                   fontWeight: FontWeight.w900,
                                   fontSize: 12,
@@ -680,7 +695,9 @@ class _GamePlayPageState extends State<GamePlayPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                isMyTurn ? playerName : _getCurrentPlayerName(),
+                                isGameStarted 
+                                  ? (isMyTurn ? playerName : _getCurrentPlayerName())
+                                  : "Waiting for host...",
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -710,28 +727,47 @@ class _GamePlayPageState extends State<GamePlayPage> {
                               borderColor: isMyTurn
                                   ? Colors.indigoAccent.withOpacity(0.5)
                                   : Colors.white.withOpacity(0.1),
-                              child: GridView.builder(
-                                itemCount: board.length,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: gridSize,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                ),
-                                itemBuilder: (context, index) {
-                                  final number = board[index];
-                                  final isGloballySelected =
-                                      selectedNumbers.contains(number);
+                              child: isGameStarted 
+                                ? GridView.builder(
+                                    itemCount: board.length,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: gridSize,
+                                      crossAxisSpacing: 8,
+                                      mainAxisSpacing: 8,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      final number = board[index];
+                                      final isGloballySelected =
+                                          selectedNumbers.contains(number);
 
-                                  return _buildGridCell(
-                                    number: number,
-                                    isSelected: isGloballySelected,
-                                    isMyTurn: isMyTurn,
-                                    playerColor: playerColor,
-                                  );
-                                },
-                              ),
+                                      return _buildGridCell(
+                                        number: number,
+                                        isSelected: isGloballySelected,
+                                        isMyTurn: isMyTurn,
+                                        playerColor: playerColor,
+                                      );
+                                    },
+                                  )
+                                : Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.groups_rounded, size: 64, color: Colors.white24),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          "WAITING FOR PLAYERS\n(${playerList.length}/${gameData?['maxPlayers'] ?? '?'})",
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white38,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                             ),
                           ),
                         ),
@@ -739,8 +775,43 @@ class _GamePlayPageState extends State<GamePlayPage> {
                     ),
                   ),
 
-                  // Game Status Footer
-                  if (isGamePaused && !dialogShown)
+                  // Host Controls
+                  if (isHost)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Row(
+                        children: [
+                          if (!isGameStarted)
+                            Expanded(
+                              child: PremiumButton(
+                                label: "START GAME",
+                                icon: Icons.play_arrow_rounded,
+                                onPressed: _startGame,
+                              ),
+                            )
+                          else ...[
+                            Expanded(
+                              child: PremiumButton(
+                                label: isGamePaused ? "RESUME" : "PAUSE",
+                                icon: isGamePaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                color: isGamePaused ? Colors.emeraldAccent : Colors.orangeAccent,
+                                onPressed: _pauseOrResumeGame,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: PremiumButton(
+                                label: "RESTART",
+                                icon: Icons.refresh_rounded,
+                                color: Colors.redAccent,
+                                onPressed: _restartGame,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    )
+                  else if (isGamePaused && !dialogShown)
                     Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: GlassContainer(
@@ -749,7 +820,7 @@ class _GamePlayPageState extends State<GamePlayPage> {
                         borderRadius: 30,
                         backgroundColor: Colors.red.withOpacity(0.2),
                         child: const Text(
-                          "GAME PAUSED",
+                          "GAME PAUSED BY HOST",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -780,6 +851,71 @@ class _GamePlayPageState extends State<GamePlayPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlayerStats(List<MapEntry<String, dynamic>> players) {
+    return Container(
+      height: 80,
+      margin: const EdgeInsets.only(top: 10),
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        scrollDirection: Axis.horizontal,
+        itemCount: players.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final p = players[index].value;
+          final bool isMe = players[index].key == widget.playerId;
+          final bool isTurn = gameData?['turn'] == players[index].key;
+          
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isTurn ? Colors.white.withOpacity(0.15) : Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isTurn ? Color(p['color']).withOpacity(0.8) : Colors.white10,
+                width: isTurn ? 2 : 1,
+              ),
+              boxShadow: isTurn ? [
+                BoxShadow(color: Color(p['color']).withOpacity(0.3), blurRadius: 8)
+              ] : [],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Color(p['color']),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      p['name'] + (isMe ? " (YOU)" : ""),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: isTurn ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      "Score: ${p['score'] ?? 0}",
+                      style: const TextStyle(color: Colors.white38, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
