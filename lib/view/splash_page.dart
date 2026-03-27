@@ -2,6 +2,7 @@ import 'package:bingo/utils/colors.dart';
 import 'package:bingo/utils/widgets.dart';
 import 'package:bingo/view/create_join.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
@@ -90,20 +91,20 @@ class _SplashScreenState extends State<SplashScreen>
                         children: [
                           GradientText(
                             text: 'BINGO',
-                            gradient: LinearGradient(
-                              colors: colors,
+                            gradient: const LinearGradient(
+                              colors: [netflixRed, Color(0xFFB1060F)],
                             ),
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               decoration: TextDecoration.none,
                               fontSize: 80,
                               fontWeight: FontWeight.w900,
-                              letterSpacing: 8,
+                              letterSpacing: 2,
                             ),
                           ),
                           const SizedBox(height: 10),
-                          const Text(
-                            'PREMIUM EDITION',
-                            style: TextStyle(
+                          Text(
+                            'NETFLIX EDITION',
+                            style: GoogleFonts.poppins(
                               color: Colors.white24,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,

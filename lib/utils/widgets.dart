@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:another_flushbar/flushbar.dart';
+import 'package:bingo/utils/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomSnackBar {
   static void show({
@@ -15,9 +17,9 @@ class CustomSnackBar {
         message: message,
         backgroundColor: color,
         flushbarPosition: FlushbarPosition.TOP,
-        duration: Duration(milliseconds: 2000),
-        margin: EdgeInsets.all(16),
-        borderRadius: BorderRadius.circular(8),
+        duration: const Duration(milliseconds: 2000),
+        margin: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(12),
         icon: Icon(icon, color: Colors.white),
       )..show(context);
     }
@@ -46,7 +48,9 @@ class GradientText extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: style,
+        style: style != null
+            ? GoogleFonts.poppins(textStyle: style)
+            : GoogleFonts.poppins(),
         textAlign: textAlign,
       ),
     );
@@ -93,8 +97,8 @@ class GlassContainer extends StatelessWidget {
             color: color ?? Colors.white.withOpacity(opacity),
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              color: borderColor ?? Colors.white.withOpacity(0.2),
-              width: 1.5,
+              color: borderColor ?? Colors.white.withOpacity(0.05),
+              width: 1,
             ),
             gradient: gradient,
           ),
@@ -123,50 +127,84 @@ class PremiumButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      child: GlassContainer(
-        borderRadius: 12,
-        opacity: 0.15,
-        padding: EdgeInsets.zero,
-        child: MaterialButton(
-          onPressed: isLoading ? null : onPressed,
-          height: 56,
-          minWidth: double.infinity,
-          splashColor: (color ?? Colors.white).withOpacity(0.1),
-          highlightColor: (color ?? Colors.white).withOpacity(0.05),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: isLoading
-              ? const SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(
-                    color: Colors.white70,
-                    strokeWidth: 2,
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (icon != null) ...[
-                      Icon(icon, color: Colors.white70, size: 20),
-                      const SizedBox(width: 8),
-                    ],
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
+    final Color buttonColor = color ?? netflixRed;
+
+    return MaterialButton(
+      onPressed: isLoading ? null : onPressed,
+      height: 54,
+      minWidth: double.infinity,
+      color: buttonColor,
+      elevation: 0,
+      highlightElevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: isLoading
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, color: Colors.white, size: 22),
+                  const SizedBox(width: 10),
+                ],
+                Text(
+                  label.toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            ),
     );
   }
+}
+
+class MeshPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    const double spacing = 40.0;
+
+    for (double i = 0; i < size.width + spacing; i += spacing) {
+      path.moveTo(i, 0);
+      path.quadraticBezierTo(
+        i + 20,
+        size.height / 2,
+        i - 20,
+        size.height,
+      );
+    }
+
+    for (double i = 0; i < size.height + spacing; i += spacing) {
+      path.moveTo(0, i);
+      path.quadraticBezierTo(
+        size.width / 2,
+        i + 20,
+        size.width,
+        i - 20,
+      );
+    }
+
+    paint.color = Colors.white.withOpacity(0.1);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -2,6 +2,7 @@ import 'package:bingo/firebase_options.dart';
 import 'package:bingo/view/splash_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +19,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-          scaffoldBackgroundColor: Colors.black,
-          appBarTheme: AppBarTheme(backgroundColor: Colors.transparent)),
+        textTheme: GoogleFonts.poppinsTextTheme(),
+        scaffoldBackgroundColor: Colors.black,
+        appBarTheme: AppBarTheme(backgroundColor: Colors.transparent),
+      ),
       title: 'BINGO',
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),

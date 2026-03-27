@@ -6,6 +6,7 @@ import 'package:bingo/view/game_play_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 
 class CreateGamePage extends StatefulWidget {
@@ -25,6 +26,13 @@ class _CreateGamePageState extends State<CreateGamePage> {
   String? gameId;
   String? playerId;
   bool _isLoading = false;
+  late String _avatarSeed;
+
+  @override
+  void initState() {
+    super.initState();
+    _avatarSeed = const Uuid().v4();
+  }
 
   String _generateGameId() {
     const chars = '0123456789';
@@ -67,6 +75,7 @@ class _CreateGamePageState extends State<CreateGamePage> {
         'hostPlayerId': newPlayerId,
         'selectedValue': selectedValue,
         'maxPlayers': maxPlayers,
+        'winMode': 'Classic',
         'createdAt': FieldValue.serverTimestamp(),
         'gameStarted': false,
         'selectedNumbers': [],
@@ -74,9 +83,11 @@ class _CreateGamePageState extends State<CreateGamePage> {
           newPlayerId: {
             'name': name,
             'color': colors[selectedColorIndex!].value,
+            'avatarSeed': _avatarSeed,
             'selectedNumbers': [],
             'bingoStatus': [false, false, false, false, false],
             'isWinner': false,
+            'score': 0,
             'board': board,
           }
         },
@@ -114,282 +125,400 @@ class _CreateGamePageState extends State<CreateGamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
+      backgroundColor: netflixBlack,
       appBar: AppBar(
         foregroundColor: Colors.white,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          "CREATE GAME",
-          style: TextStyle(
+        centerTitle: true,
+        title: Text(
+          "CREATE BINGO MATCH",
+          style: GoogleFonts.poppins(
             fontWeight: FontWeight.w900,
             letterSpacing: 2,
-            fontSize: 20,
+            fontSize: 16,
+            color: netflixRed,
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF1E1B4B),
-                  Colors.black,
-                ],
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        GlassContainer(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "YOUR IDENTITY",
-                                style: TextStyle(
-                                  color: Colors.white38,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextField(
-                                controller: _nameController,
-                                maxLength: 15,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: "Enter your name...",
-                                  hintStyle:
-                                      const TextStyle(color: Colors.white24),
-                                  filled: true,
-                                  fillColor: Colors.white.withOpacity(0.05),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding: const EdgeInsets.all(16),
-                                  counterText: "",
-                                ),
-                              ),
-                              const SizedBox(height: 32),
-                              const Text(
-                                "PICK YOUR COLOR",
-                                style: TextStyle(
-                                  color: Colors.white38,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              SizedBox(
-                                height: 50,
-                                child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: colors.length,
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(width: 16),
-                                  itemBuilder: (context, index) {
-                                    final bool isSelected =
-                                        selectedColorIndex == index;
-                                    return GestureDetector(
-                                      onTap: () => setState(
-                                          () => selectedColorIndex = index),
-                                      child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 200),
-                                        width: 50,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          color: colors[index],
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? Colors.white
-                                                : Colors.transparent,
-                                            width: 3,
-                                          ),
-                                          boxShadow: isSelected
-                                              ? [
-                                                  BoxShadow(
-                                                    color: colors[index]
-                                                        .withOpacity(0.5),
-                                                    blurRadius: 12,
-                                                    spreadRadius: 2,
-                                                  )
-                                                ]
-                                              : [],
-                                        ),
-                                        child: isSelected
-                                            ? const Icon(Icons.check,
-                                                color: Colors.white)
-                                            : null,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildOptionGroup(
-                                title: "VALUE RANGE",
-                                options: valueOptions,
-                                selectedValue: selectedValue,
-                                onSelected: (val) =>
-                                    setState(() => selectedValue = val),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _buildOptionGroup(
-                                title: "PLAYERS",
-                                options: playerCountOptions,
-                                selectedValue: maxPlayers,
-                                onSelected: (val) =>
-                                    setState(() => maxPlayers = val),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (gameId != null) ...[
-                          const SizedBox(height: 32),
-                          GlassContainer(
-                            padding: const EdgeInsets.all(20),
-                            borderColor: Colors.green.withOpacity(0.3),
-                            child: Column(
-                              children: [
-                                const Text(
-                                  "GAME CREATED SUCCESSFULLY!",
-                                  style: TextStyle(
-                                    color: Colors.greenAccent,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                SelectableText(
-                                  gameId!,
-                                  style: const TextStyle(
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: 4,
-                                  ),
-                                ),
-                                const Text(
-                                  "Share this ID with your friends",
-                                  style: TextStyle(color: Colors.white38),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 48),
-                        Hero(
-                          tag: 'create',
-                          child: PremiumButton(
-                            isLoading: _isLoading,
-                            label: gameId != null ? "GO TO LOBBY" : "CREATE GAME",
-                            icon: gameId != null
-                                ? Icons.rocket_launch_outlined
-                                : Icons.add_rounded,
-                            onPressed: _isLoading
-                                ? () {}
-                                : gameId != null
-                                    ? _navigateToGame
-                                    : _createGame,
-                          ),
-                        ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth > 700;
+          final double horizontalPadding = isTablet ? constraints.maxWidth * 0.15 : 24;
+          final double formMaxWidth = isTablet ? 600 : 500;
+
+          return Stack(
+            children: [
+              // Netflix background
+              Container(color: netflixBlack),
+              // Very subtle radial gradient from top
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: const Alignment(0, -1.2),
+                      radius: 1.5,
+                      colors: [
+                        netflixRed.withOpacity(0.12),
+                        Colors.transparent,
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+              SafeArea(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: formMaxWidth),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(height: 20),
+                            
+                            // Identity Section
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "WHO'S PLAYING?",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                TextField(
+                                  controller: _nameController,
+                                  maxLength: 15,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: "Enter your name...",
+                                    hintStyle: GoogleFonts.poppins(color: Colors.white24),
+                                    filled: true,
+                                    fillColor: netflixGrey,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: netflixRed, width: 2),
+                                    ),
+                                    contentPadding: const EdgeInsets.all(20),
+                                    counterText: "",
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 32),
+                            
+                            // Avatar Section
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "YOUR SHOW AVATAR",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: netflixGrey.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color: Colors.white.withOpacity(0.1)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 80,
+                                        height: 80,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.05),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: netflixRed.withOpacity(0.3),
+                                              width: 2),
+                                        ),
+                                        child: ClipOval(
+                                          child: Image.network(
+                                            "https://api.dicebear.com/7.x/avataaars/svg?seed=$_avatarSeed",
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Pick your premiere look",
+                                              style: GoogleFonts.poppins(
+                                                color: Colors.white70,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            MaterialButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _avatarSeed = const Uuid().v4();
+                                                });
+                                              },
+                                              color: netflixRed,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8)),
+                                              child: Text(
+                                                "SHUFFLE LOOK",
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w900,
+                                                  letterSpacing: 1,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 32),
+                            
+                            // Color Selection Section
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "CHOOSE YOUR AVATAR COLOR",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 13,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  height: 60,
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: colors.length,
+                                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                    itemBuilder: (context, index) {
+                                      final bool isSelected = selectedColorIndex == index;
+                                      return GestureDetector(
+                                        onTap: () => setState(() => selectedColorIndex = index),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 200),
+                                          width: 60,
+                                          height: 60,
+                                          decoration: BoxDecoration(
+                                            color: colors[index],
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: isSelected ? Colors.white : Colors.transparent,
+                                              width: 3,
+                                            ),
+                                          ),
+                                          child: isSelected
+                                              ? const Icon(Icons.check, color: Colors.white, size: 30)
+                                              : null,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 32),
+                            
+                            // Options Row
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildOptionGroup<int>(
+                                    title: "BOARD SIZE",
+                                    options: valueOptions.map((e) => {"label": "$e", "value": e}).toList(),
+                                    selectedValue: selectedValue,
+                                    onSelected: (val) => setState(() => selectedValue = val),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildOptionGroup<int>(
+                                    title: "MAX PLAYERS",
+                                    options: playerCountOptions.map((e) => {"label": "$e", "value": e}).toList(),
+                                    selectedValue: maxPlayers,
+                                    onSelected: (val) => setState(() => maxPlayers = val),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                             const SizedBox(height: 16),
+
+                            // Note: Win Mode selection removed for Normal Mode simplification
+
+                            if (gameId != null) ...[
+                              const SizedBox(height: 40),
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: netflixGrey,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.green, width: 1),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "GAME CREATED!",
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 14,
+                                        letterSpacing: 2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    SelectableText(
+                                      gameId!,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 48,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: 8,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "Share this ID with other players",
+                                      style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(height: 48),
+                            
+                            Hero(
+                              tag: 'create',
+                              child: PremiumButton(
+                                isLoading: _isLoading,
+                                label: gameId != null ? "ENTER SHOW" : "CREATE MATCH",
+                                icon: gameId != null ? Icons.play_arrow_rounded : Icons.add_rounded,
+                                onPressed: _isLoading
+                                    ? () {}
+                                    : gameId != null
+                                        ? _navigateToGame
+                                        : _createGame,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOptionGroup({
+  Widget _buildOptionGroup<T>({
     required String title,
-    required List<int> options,
-    required int? selectedValue,
-    required Function(int) onSelected,
+    required List<Map<String, dynamic>> options,
+    required T? selectedValue,
+    required Function(T) onSelected,
   }) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white38,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              letterSpacing: 1,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            color: Colors.white70,
+            fontWeight: FontWeight.w900,
+            fontSize: 11,
+            letterSpacing: 1,
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: options.map((opt) {
-              final isSelected = selectedValue == opt;
-              return GestureDetector(
-                onTap: () => onSelected(opt),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.white.withOpacity(0.2)
-                        : Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isSelected ? Colors.white : Colors.transparent,
-                    ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: options.map((opt) {
+            final isSelected = selectedValue == opt['value'];
+            return GestureDetector(
+              onTap: () => onSelected(opt['value'] as T),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                decoration: BoxDecoration(
+                  color: isSelected ? netflixRed : netflixGrey,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.05),
+                    width: isSelected ? 2 : 1,
                   ),
-                  child: Text(
-                    "$opt",
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white60,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                              color: netflixRed.withOpacity(0.5),
+                              blurRadius: 15,
+                              spreadRadius: 1)
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  "${opt['label']}",
+                  style: GoogleFonts.poppins(
+                    color: isSelected ? Colors.white : Colors.white70,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
