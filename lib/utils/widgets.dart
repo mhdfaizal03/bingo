@@ -1,8 +1,7 @@
 import 'dart:ui';
 import 'package:another_flushbar/flushbar.dart';
-import 'package:bingo/utils/colors.dart';
+import 'package:bingo/utils/game_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CustomSnackBar {
   static void show({
@@ -41,18 +40,22 @@ class GradientText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ShaderMask(
-      blendMode: BlendMode.srcIn,
-      shaderCallback: (bounds) => gradient.createShader(
-        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-      ),
-      child: Text(
-        text,
-        style: style != null
-            ? GoogleFonts.poppins(textStyle: style)
-            : GoogleFonts.poppins(),
-        textAlign: textAlign,
-      ),
+    return ValueListenableBuilder<String>(
+      valueListenable: GameTheme.currentTheme,
+      builder: (context, currentTheme, child) {
+        final theme = GameTheme.getThemeColors(currentTheme);
+        return ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) => gradient.createShader(
+            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+          ),
+          child: Text(
+            text,
+            style: theme['font'](textStyle: style),
+            textAlign: textAlign,
+          ),
+        );
+      },
     );
   }
 }
@@ -127,46 +130,52 @@ class PremiumButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color buttonColor = color ?? netflixRed;
+    return ValueListenableBuilder<String>(
+      valueListenable: GameTheme.currentTheme,
+      builder: (context, currentTheme, child) {
+        final theme = GameTheme.getThemeColors(currentTheme);
+        final Color buttonColor = color ?? theme['accent'] as Color;
 
-    return MaterialButton(
-      onPressed: isLoading ? null : onPressed,
-      height: 54,
-      minWidth: double.infinity,
-      color: buttonColor,
-      elevation: 0,
-      highlightElevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: isLoading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, color: Colors.white, size: 22),
-                  const SizedBox(width: 10),
-                ],
-                Text(
-                  label.toUpperCase(),
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.2,
+        return MaterialButton(
+          onPressed: isLoading ? null : onPressed,
+          height: 54,
+          minWidth: double.infinity,
+          color: buttonColor,
+          elevation: 0,
+          highlightElevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: isLoading
+              ? SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: theme['bg'] as Color,
+                    strokeWidth: 2,
                   ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(icon, color: Colors.white, size: 22),
+                      const SizedBox(width: 10),
+                    ],
+                    Text(
+                      label.toUpperCase(),
+                      style: theme['font'](
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+        );
+      },
     );
   }
 }
