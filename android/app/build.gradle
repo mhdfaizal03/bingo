@@ -38,9 +38,9 @@ android {
     defaultConfig {
         applicationId "com.soft.bingo"
         minSdkVersion flutter.minSdkVersion
-        targetSdk 34
-        versionCode 4   // increment from 3 → 4
-        versionName "1.0.3" // bump for next release
+        targetSdk 35
+        versionCode flutter.versionCode
+        versionName flutter.versionName
     }
     signingConfigs {
         release {
