@@ -167,7 +167,7 @@ class _CreateJoinState extends State<CreateJoin> {
                   ),
                   SizedBox(height: 20),
                   Text(
-                    "version.2.0",
+                    "version 11",
                     style: TextStyle(color: Colors.grey, fontSize: 10),
                   )
                 ],
